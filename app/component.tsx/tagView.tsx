@@ -6,6 +6,13 @@ export interface Props {
   name: string;
   data?: string;
   children?: Props[];
+  id: number;
+}
+
+interface Tree {
+  id: number;
+  name: string;
+  children: Props[];
 }
 
 export default function TagView() {
@@ -38,8 +45,13 @@ export default function TagView() {
 
   return (
     <>
-      {tree.map((item: Props, id: number) => (
-        <SingleTag item={item} key={id} />
+      {tree.map((item: Tree, index: number) => (
+        <div key={index}>
+          <p>{item.name}</p>
+          {item.children.map((item: Props, index: number) => (
+            <SingleTag item={item} key={index} />
+          ))}
+        </div>
       ))}
     </>
   );
