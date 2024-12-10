@@ -6,6 +6,9 @@ import axios from "axios";
 export default function SingleTag({ item }: { item: Props }) {
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
 
+  const [isEditing, setIsEditing] = useState(false);
+  const [localData, setLocalData] = useState(item.data);
+
   const addChild = async (parentId: number) => {
     console.log(parentId, "");
     axios
@@ -18,6 +21,18 @@ export default function SingleTag({ item }: { item: Props }) {
       })
       .catch((error) => {
         console.error("Error fetching the tree data:", error);
+      });
+  };
+
+  const updateTag = async (tagId: number, name: string, data: string) => {
+    axios
+      .put(`http://127.0.0.1:8000/tags/${tagId}`, { name, data })
+      .then((response) => {
+        console.log("Updated tag:", response.data);
+        // Optionally, refetch the tree structure
+      })
+      .catch((error) => {
+        console.error("Error updating tag:", error);
       });
   };
 
@@ -51,12 +66,28 @@ export default function SingleTag({ item }: { item: Props }) {
               <label className="block text-sm font-medium text-gray-700">
                 Data
               </label>
-              <input
-                type="text"
-                className="border-2 border-gray-300 rounded w-full mt-1 p-1"
-                defaultValue={item.data}
-                // onChange={(e) => setData(e.target.value)}
-              />
+              {isEditing ? (
+                <input
+                  type="text"
+                  className="border-2 border-gray-300 rounded w-full mt-1 p-1 text-black"
+                  value={localData}
+                  onChange={(e) => setLocalData(e.target.value)}
+                  onBlur={() => {
+                    setIsEditing(false);
+                    if (localData !== item.data) {
+                      updateTag(item.id, item.name, localData as string); // Save the updated data
+                    }
+                  }}
+                  autoFocus
+                />
+              ) : (
+                <p
+                  className="border-2 border-gray-300 rounded w-full mt-1 p-1 cursor-pointer text-black"
+                  onClick={() => setIsEditing(true)}
+                >
+                  {localData || "Click to edit"}
+                </p>
+              )}
             </div>
           )}
           {item.children && item.children.length > 0 && (
