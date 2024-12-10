@@ -1,9 +1,25 @@
 import { useState } from "react";
 import { Props } from "./tagView";
 import { ArrowIcon } from "../assets/arrow";
+import axios from "axios";
 
 export default function SingleTag({ item }: { item: Props }) {
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
+
+  const addChild = async (parentId: number) => {
+    console.log(parentId, "");
+    axios
+      .post("http://127.0.0.1:8000/tags/add-child", {
+        parent_id: parentId,
+      })
+      .then((response) => {
+        console.log(response);
+        // setTree(response.data); // Assuming the API returns the tree structure
+      })
+      .catch((error) => {
+        console.error("Error fetching the tree data:", error);
+      });
+  };
 
   return (
     <div className="border-2 border-blue-400 rounded-lg bg-blue-200 p-2 mb-2">
@@ -21,9 +37,9 @@ export default function SingleTag({ item }: { item: Props }) {
         </div>
         <button
           className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
-          // onClick={() => {
-          //   setIsExpanded((prev) => !prev);
-          // }}
+          onClick={() => {
+            addChild(item.id);
+          }}
         >
           Add Child
         </button>
