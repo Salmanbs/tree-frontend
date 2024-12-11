@@ -4,20 +4,28 @@ import { ArrowIcon } from "../assets/arrow";
 import axios from "axios";
 
 export default function SingleTag({ item }: { item: Props }) {
+  const [tags, setTags] = useState(item);
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
 
   const [isEditing, setIsEditing] = useState(false);
   const [localData, setLocalData] = useState(item.data);
 
   const addChild = async (parentId: number) => {
-    console.log(parentId, "");
     axios
       .post("http://127.0.0.1:8000/tags/add-child", {
         parent_id: parentId,
       })
       .then((response) => {
         console.log(response);
-        // setTree(response.data); // Assuming the API returns the tree structure
+
+        setTags((prev) => ({
+          ...prev,
+          data: null,
+          children: [
+            ...(prev.children || []),
+            { name: "New Child", data: undefined, children: [] }, // Ensure 'children' is included if applicable
+          ],
+        }));
       })
       .catch((error) => {
         console.error("Error fetching the tree data:", error);
@@ -48,12 +56,12 @@ export default function SingleTag({ item }: { item: Props }) {
           >
             <ArrowIcon className={`${isExpanded && "transform rotate-90"}`} />
           </button>
-          <span className="font-bold text-lg">{item.name}</span>
+          <span className="font-bold text-lg">{tags.name}</span>
         </div>
         <button
           className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
           onClick={() => {
-            addChild(item.id);
+            addChild(tags.id as number);
           }}
         >
           Add Child
@@ -61,7 +69,7 @@ export default function SingleTag({ item }: { item: Props }) {
       </div>
       {isExpanded && (
         <>
-          {item.data && (
+          {tags.data && (
             <div className="mt-2">
               <label className="block text-sm font-medium text-gray-700">
                 Data
@@ -75,7 +83,11 @@ export default function SingleTag({ item }: { item: Props }) {
                   onBlur={() => {
                     setIsEditing(false);
                     if (localData !== item.data) {
-                      updateTag(item.id, item.name, localData as string); // Save the updated data
+                      updateTag(
+                        tags.id as number,
+                        tags.name,
+                        localData as string
+                      ); // Save the updated data
                     }
                   }}
                   autoFocus
@@ -90,9 +102,9 @@ export default function SingleTag({ item }: { item: Props }) {
               )}
             </div>
           )}
-          {item.children && item.children.length > 0 && (
+          {tags.children && tags.children.length > 0 && (
             <div className="mt-2 pl-4 border-l-2 border-gray-400">
-              {item.children.map((child, index) => (
+              {tags.children.map((child, index) => (
                 <SingleTag key={index} item={child} />
               ))}
             </div>

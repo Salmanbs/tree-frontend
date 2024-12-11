@@ -26,7 +26,7 @@ export default function TagView() {
     axios
       .get("http://127.0.0.1:8000/trees")
       .then((response) => {
-        setTree(response.data); // Assuming the API returns the tree structure
+        setTree(response.data);
       })
       .catch((error) => {
         console.error("Error fetching the tree data:", error);
@@ -46,10 +46,9 @@ export default function TagView() {
     try {
       // Transform the tree to remove metadata
       const transformedTree = tree.tree.map(transformTree)[0];
+
       // Serialize the tree hierarchy into JSON
       const jsonTree = JSON.stringify(transformedTree, null, 2);
-
-      // Display JSON in the console
 
       // Update the exported JSON map for this specific tree
       setExportedJsonMap((prev) => ({
@@ -58,6 +57,7 @@ export default function TagView() {
       }));
 
       // Optionally, download the JSON file
+
       // const blob = new Blob([jsonTree], { type: "application/json" });
       // const url = URL.createObjectURL(blob);
       // const a = document.createElement("a");
