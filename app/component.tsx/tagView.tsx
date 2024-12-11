@@ -6,7 +6,7 @@ export interface Props {
   name: string;
   data?: string;
   children?: Props[];
-  id: number;
+  id?: number;
 }
 
 interface Tree {
@@ -33,13 +33,23 @@ export default function TagView() {
       });
   }, []);
 
+  const transformTree = (node: Props): Omit<Props, "id"> => {
+    // Recursively remove the `id` field from each node
+    return {
+      name: node.name,
+      data: node.data,
+      children: node.children?.map(transformTree) || [], // Recurse into children
+    };
+  };
+
   const exportTree = async (tree: Tree) => {
     try {
+      // Transform the tree to remove metadata
+      const transformedTree = tree.tree.map(transformTree)[0];
       // Serialize the tree hierarchy into JSON
-      const jsonTree = JSON.stringify(tree, null, 2);
+      const jsonTree = JSON.stringify(transformedTree, null, 2);
 
       // Display JSON in the console
-      console.log("Exported Tree:", jsonTree, tree);
 
       // Update the exported JSON map for this specific tree
       setExportedJsonMap((prev) => ({
