@@ -18,6 +18,10 @@ interface Tree {
 export default function TagView() {
   const [tree, setTree] = useState([]);
 
+  const [exportedJsonMap, setExportedJsonMap] = useState<{
+    [key: number]: string;
+  }>({}); // Map for tree-specific JSON
+
   useEffect(() => {
     axios
       .get("http://127.0.0.1:8000/trees")
@@ -29,13 +33,19 @@ export default function TagView() {
       });
   }, []);
 
-  const exportTree = async () => {
+  const exportTree = async (tree: Tree) => {
     try {
       // Serialize the tree hierarchy into JSON
       const jsonTree = JSON.stringify(tree, null, 2);
 
       // Display JSON in the console
-      console.log("Exported Tree:", jsonTree);
+      console.log("Exported Tree:", jsonTree, tree);
+
+      // Update the exported JSON map for this specific tree
+      setExportedJsonMap((prev) => ({
+        ...prev,
+        [tree.id]: jsonTree, // Map tree ID to its exported JSON
+      }));
 
       // Optionally, download the JSON file
       // const blob = new Blob([jsonTree], { type: "application/json" });
@@ -46,12 +56,10 @@ export default function TagView() {
       // a.click();
       // URL.revokeObjectURL(url);
 
-      console.log(tree, "tree");
-
       // Call the REST API to save the tree hierarchy
       const response = await axios.post(
         "http://127.0.0.1:8000/trees/save",
-        tree[0]
+        tree
       );
 
       console.log("Tree saved to the database:", response.data);
@@ -64,18 +72,26 @@ export default function TagView() {
     <>
       {tree.map((item: Tree, index: number) => (
         <div key={index}>
-          <p>{item.name}</p>
+          <p className="text-black">{item.name}</p>
           {item.tree.map((item: Props, index: number) => (
             <SingleTag item={item} key={index} />
           ))}
+          <button
+            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+            onClick={() => exportTree(item)}
+          >
+            Export
+          </button>
+          {exportedJsonMap[item.id] && (
+            <div className="mt-4 p-4 bg-gray-100 rounded border border-gray-300">
+              <h3 className="text-black font-bold mb-2">Exported JSON:</h3>
+              <pre className="text-sm text-black bg-gray-50 p-2 rounded overflow-auto">
+                {exportedJsonMap[item.id]}
+              </pre>
+            </div>
+          )}
         </div>
       ))}
-      <button
-        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-        onClick={exportTree}
-      >
-        Export
-      </button>
     </>
   );
 }
