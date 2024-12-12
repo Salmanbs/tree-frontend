@@ -18,6 +18,9 @@ interface Tree {
 
 export default function TagView() {
   const [tree, setTree] = useState([]);
+  const [treeName, setTreeName] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setError] = useState(false);
 
   const [exportedJsonMap, setExportedJsonMap] = useState<{
     [key: number]: string;
@@ -28,9 +31,12 @@ export default function TagView() {
       .get(API_ENDPOINT.TREES)
       .then((response) => {
         setTree(response.data);
+        setIsLoading(false);
       })
       .catch((error) => {
         console.error("Error fetching the tree data:", error);
+        setIsLoading(false);
+        setError(true);
       });
   }, []);
 
@@ -85,8 +91,12 @@ export default function TagView() {
   };
 
   const createNewTree = async () => {
+    if (!treeName) {
+      alert("Tree name is required!");
+      return;
+    }
     const data = {
-      name: "Example Tree",
+      name: treeName,
       tree: [
         {
           name: "root",
@@ -107,6 +117,8 @@ export default function TagView() {
 
   return (
     <>
+      {isLoading && <p className="text-black"> Loading </p>}
+      {isError && <p className="text-black"> Something went wrong</p>}
       {tree.map((item: Tree, index: number) => (
         <div key={index}>
           <p className="text-black">{item.name}</p>
@@ -130,12 +142,27 @@ export default function TagView() {
         </div>
       ))}
 
-      <button
-        className="text-black bg-blue-500  px-4 py-2 rounded hover:bg-blue-600"
-        onClick={createNewTree}
-      >
-        Create a new tree
-      </button>
+      <div className="border-2 border-gray-300 rounded-lg p-4 mt-4 bg-gray-100">
+        <h2 className="text-lg font-bold mb-4">Create a New Tree</h2>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Tree Name
+          </label>
+          <input
+            type="text"
+            className="border-2 border-gray-300 rounded w-full p-2 text-black"
+            value={treeName}
+            onChange={(e) => setTreeName(e.target.value)}
+            placeholder="Enter tree name"
+          />
+        </div>
+        <button
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          onClick={createNewTree}
+        >
+          Create New Tree
+        </button>
+      </div>
     </>
   );
 }
