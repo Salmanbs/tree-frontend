@@ -34,13 +34,21 @@ export default function TagView() {
       });
   }, []);
 
-  const transformTree = (node: Props): Omit<Props, "id"> => {
-    // Recursively remove the `id` field from each node
-    return {
+  const transformTree = (node: Props): Props => {
+    // Recursively process children, if they exist and are non-empty
+    const processedChildren =
+      node.children && node.children?.length > 0
+        ? node.children.map(transformTree)
+        : undefined;
+
+    // Construct the node object with only necessary properties
+    const transformedNode: Props = {
       name: node.name,
-      data: node.data,
-      children: node.children?.map(transformTree) || [], // Recurse into children
+      ...(node.data ? { data: node.data } : {}), // Include `data` only if it's not null
+      ...(processedChildren ? { children: processedChildren } : {}), // Include `children` only if non-empty
     };
+
+    return transformedNode;
   };
 
   const exportTree = async (tree: Tree) => {
@@ -76,6 +84,27 @@ export default function TagView() {
     }
   };
 
+  const createNewTree = async () => {
+    const data = {
+      name: "Example Tree",
+      tree: [
+        {
+          name: "root",
+          data: "New Data",
+        },
+      ],
+    };
+
+    axios
+      .post(API_ENDPOINT.SAVE_TREE, data)
+      .then(() => {
+        window.location.reload();
+      })
+      .catch((error) => {
+        console.error("Error creating new tree:", error);
+      });
+  };
+
   return (
     <>
       {tree.map((item: Tree, index: number) => (
@@ -100,6 +129,10 @@ export default function TagView() {
           )}
         </div>
       ))}
+
+      <button className="text-black" onClick={createNewTree}>
+        Create a new tree
+      </button>
     </>
   );
 }
