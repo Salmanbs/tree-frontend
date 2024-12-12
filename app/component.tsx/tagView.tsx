@@ -130,7 +130,10 @@ export default function TagView() {
         </div>
       ))}
 
-      <button className="text-black" onClick={createNewTree}>
+      <button
+        className="text-black bg-blue-500  px-4 py-2 rounded hover:bg-blue-600"
+        onClick={createNewTree}
+      >
         Create a new tree
       </button>
     </>
