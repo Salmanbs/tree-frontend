@@ -8,7 +8,10 @@ export default function SingleTag({ item }: { item: Props }) {
   const [tags, setTags] = useState(item);
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
 
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [localName, setLocalName] = useState(item.name);
+
+  const [isEditingData, setIsEditingData] = useState(false);
   const [localData, setLocalData] = useState(item.data);
 
   const addChild = async (parentId: number) => {
@@ -50,15 +53,24 @@ export default function SingleTag({ item }: { item: Props }) {
       });
   };
 
-  const toggleExpanded = () => {
-    setIsExpanded((prev) => !prev);
+  const handleNameUpdate = () => {
+    setIsEditingName(false);
+    if (localName !== tags.name) {
+      setTags((prev) => ({ ...prev, name: localName }));
+      updateTag(tags.id as number, localName, tags.data || "");
+    }
   };
 
-  const handleOnBur = () => {
-    setIsEditing(false);
-    if (localData !== item.data) {
-      updateTag(tags.id as number, tags.name, localData as string); // Save the updated data
+  const handleDataUpdate = () => {
+    setIsEditingData(false);
+    if (localData !== tags.data) {
+      setTags((prev) => ({ ...prev, data: localData }));
+      updateTag(tags.id as number, tags.name, localData || "");
     }
+  };
+
+  const toggleExpanded = () => {
+    setIsExpanded((prev) => !prev);
   };
 
   return (
@@ -71,7 +83,24 @@ export default function SingleTag({ item }: { item: Props }) {
           >
             <ArrowIcon className={`${isExpanded && "transform rotate-90"}`} />
           </button>
-          <span className="font-bold text-lg">{tags.name}</span>
+          {isEditingName ? (
+            <input
+              type="text"
+              value={localName}
+              onChange={(e) => setLocalName(e.target.value)}
+              onBlur={handleNameUpdate}
+              onKeyDown={(e) => e.key === "Enter" && handleNameUpdate()}
+              className="border-2 border-gray-300 rounded w-full px-2 py-1 text-black"
+              autoFocus
+            />
+          ) : (
+            <span
+              className="font-bold text-lg cursor-pointer"
+              onClick={() => setIsEditingName(true)}
+            >
+              {tags.name}
+            </span>
+          )}
         </div>
         <button
           className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
@@ -89,19 +118,20 @@ export default function SingleTag({ item }: { item: Props }) {
             <label className="block text-sm font-medium text-gray-700">
               Data
             </label>
-            {isEditing ? (
+            {isEditingData ? (
               <input
                 type="text"
                 className="border-2 border-gray-300 rounded w-full mt-1 p-1 text-black"
                 value={localData}
                 onChange={(e) => setLocalData(e.target.value)}
-                onBlur={handleOnBur}
+                onBlur={handleDataUpdate}
+                onKeyDown={(e) => e.key === "Enter" && handleDataUpdate()}
                 autoFocus
               />
             ) : (
               <p
                 className="border-2 border-gray-300 rounded w-full mt-1 p-1 cursor-pointer text-black"
-                onClick={() => setIsEditing(true)}
+                onClick={() => setIsEditingData(true)}
               >
                 {localData || "Click to edit"}
               </p>
