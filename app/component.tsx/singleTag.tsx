@@ -54,7 +54,6 @@ export default function SingleTag({
       .put(`${API_ENDPOINT.TAGS}/${tagId}`, { name, data })
       .then((response) => {
         console.log("Updated tag:", response.data);
-        // Optionally, refetch the tree structure
       })
       .catch((error) => {
         console.error("Error updating tag:", error);

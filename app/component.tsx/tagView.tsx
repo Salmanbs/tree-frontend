@@ -84,7 +84,6 @@ export default function TagView() {
       // Serialize the tree hierarchy into JSON
       const jsonTree = JSON.stringify(transformedTree, null, 2);
 
-      // Update the exported JSON map for this specific tree
       setExportedJsonMap((prev) => ({
         ...prev,
         [tree.id]: jsonTree, // Map tree ID to its exported JSON
