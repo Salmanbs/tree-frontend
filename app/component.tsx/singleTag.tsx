@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Props } from "./tagView";
 import { ArrowIcon } from "../assets/arrow";
 import axios from "axios";
+import { API_ENDPOINT } from "@/endpoint";
 
 export default function SingleTag({ item }: { item: Props }) {
   const [tags, setTags] = useState(item);
@@ -12,18 +13,23 @@ export default function SingleTag({ item }: { item: Props }) {
 
   const addChild = async (parentId: number) => {
     axios
-      .post("http://127.0.0.1:8000/tags/add-child", {
+      .post(API_ENDPOINT.TAGS_ADD_CHILD, {
         parent_id: parentId,
       })
       .then((response) => {
-        console.log(response);
+        const data = response.data;
 
         setTags((prev) => ({
           ...prev,
           data: null,
           children: [
             ...(prev.children || []),
-            { name: "New Child", data: undefined, children: [] }, // Ensure 'children' is included if applicable
+            {
+              name: "New Child",
+              data: "Data",
+              children: null,
+              id: data.id,
+            }, // Ensure 'children' is included if applicable
           ],
         }));
       })
@@ -34,7 +40,7 @@ export default function SingleTag({ item }: { item: Props }) {
 
   const updateTag = async (tagId: number, name: string, data: string) => {
     axios
-      .put(`http://127.0.0.1:8000/tags/${tagId}`, { name, data })
+      .put(`${API_ENDPOINT.TAGS}/${tagId}`, { name, data })
       .then((response) => {
         console.log("Updated tag:", response.data);
         // Optionally, refetch the tree structure

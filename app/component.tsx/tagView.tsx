@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import SingleTag from "./singleTag";
 import axios from "axios";
+import { API_ENDPOINT } from "@/endpoint";
 
 export interface Props {
   name: string;
@@ -24,7 +25,7 @@ export default function TagView() {
 
   useEffect(() => {
     axios
-      .get("http://127.0.0.1:8000/trees")
+      .get(API_ENDPOINT.TREES)
       .then((response) => {
         setTree(response.data);
       })
@@ -67,10 +68,7 @@ export default function TagView() {
       // URL.revokeObjectURL(url);
 
       // Call the REST API to save the tree hierarchy
-      const response = await axios.post(
-        "http://127.0.0.1:8000/trees/save",
-        tree
-      );
+      const response = await axios.post(API_ENDPOINT.SAVE_TREE, tree);
 
       console.log("Tree saved to the database:", response.data);
     } catch (error) {
