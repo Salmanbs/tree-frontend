@@ -5,7 +5,7 @@ import { API_ENDPOINT } from "@/endpoint";
 
 export interface Props {
   name: string;
-  data?: string;
+  data?: string | null;
   children?: Props[];
   id?: number;
 }
@@ -17,7 +17,7 @@ interface Tree {
 }
 
 export default function TagView() {
-  const [tree, setTree] = useState([]);
+  const [tree, setTree] = useState<Tree[]>([]);
   const [treeName, setTreeName] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setError] = useState(false);
@@ -39,6 +39,25 @@ export default function TagView() {
         setError(true);
       });
   }, []);
+
+  const updateTree = (treeId: number, updatedNode: Props) => {
+    setTree((prev) =>
+      prev.map((t) =>
+        t.id === treeId
+          ? {
+              ...t,
+              tree: t.tree.map((node) =>
+                node.id === updatedNode.id ? updatedNode : node
+              ),
+            }
+          : t
+      )
+    );
+  };
+
+  useEffect(() => {
+    console.log("tree", tree);
+  }, [tree]);
 
   const transformTree = (node: Props): Props => {
     // Recursively process children, if they exist and are non-empty
@@ -122,8 +141,12 @@ export default function TagView() {
       {tree.map((item: Tree, index: number) => (
         <div key={index}>
           <p className="text-black">{item.name}</p>
-          {item.tree.map((item: Props, index: number) => (
-            <SingleTag item={item} key={index} />
+          {item.tree.map((data: Props, index: number) => (
+            <SingleTag
+              item={data}
+              key={index}
+              updateTree={(updatedNode) => updateTree(item.id, updatedNode)}
+            />
           ))}
           <button
             className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"

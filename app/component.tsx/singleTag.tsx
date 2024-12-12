@@ -4,14 +4,20 @@ import { ArrowIcon } from "../assets/arrow";
 import axios from "axios";
 import { API_ENDPOINT } from "@/endpoint";
 
-export default function SingleTag({ item }: { item: Props }) {
-  const [tags, setTags] = useState(item);
+export default function SingleTag({
+  item,
+  updateTree,
+}: {
+  item: Props;
+  updateTree: (updatedItem: Props) => void;
+}) {
+  const [tags, setTags] = useState<Props>(item);
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
 
-  const [isEditingName, setIsEditingName] = useState(false);
-  const [localName, setLocalName] = useState(item.name);
+  const [isEditingName, setIsEditingName] = useState<boolean>(false);
+  const [localName, setLocalName] = useState<string>(item.name);
 
-  const [isEditingData, setIsEditingData] = useState(false);
+  const [isEditingData, setIsEditingData] = useState<boolean>(false);
   const [localData, setLocalData] = useState(item.data);
 
   const addChild = async (parentId: number) => {
@@ -22,19 +28,21 @@ export default function SingleTag({ item }: { item: Props }) {
       .then((response) => {
         const data = response.data;
 
-        setTags((prev) => ({
-          ...prev,
+        const newChild = {
+          id: data.id,
+          name: "New Child",
+          data: "New Data",
+          children: [],
+        };
+
+        const updatedTags = {
+          ...tags,
           data: null,
-          children: [
-            ...(prev.children || []),
-            {
-              name: "New Child",
-              data: "Data",
-              children: null,
-              id: data.id,
-            },
-          ],
-        }));
+          children: [...(tags.children || []), newChild],
+        };
+
+        setTags(updatedTags);
+        updateTree(updatedTags);
       })
       .catch((error) => {
         console.error("Error fetching the tree data:", error);
@@ -56,7 +64,9 @@ export default function SingleTag({ item }: { item: Props }) {
   const handleNameUpdate = () => {
     setIsEditingName(false);
     if (localName !== tags.name) {
-      setTags((prev) => ({ ...prev, name: localName }));
+      const updatedTags = { ...tags, name: localName };
+      setTags(updatedTags);
+      updateTree(updatedTags);
       updateTag(tags.id as number, localName, tags.data || "");
     }
   };
@@ -64,13 +74,26 @@ export default function SingleTag({ item }: { item: Props }) {
   const handleDataUpdate = () => {
     setIsEditingData(false);
     if (localData !== tags.data) {
-      setTags((prev) => ({ ...prev, data: localData }));
+      const updatedTags = { ...tags, data: localData };
+      setTags(updatedTags);
+      updateTree(updatedTags);
       updateTag(tags.id as number, tags.name, localData || "");
     }
   };
 
   const toggleExpanded = () => {
     setIsExpanded((prev) => !prev);
+  };
+
+  const updateChild = (updatedChild: Props) => {
+    const updatedTags = {
+      ...tags,
+      children: tags.children?.map((child) =>
+        child.id === updatedChild.id ? updatedChild : child
+      ),
+    };
+    setTags(updatedTags);
+    updateTree(updatedTags);
   };
 
   return (
@@ -122,7 +145,7 @@ export default function SingleTag({ item }: { item: Props }) {
               <input
                 type="text"
                 className="border-2 border-gray-300 rounded w-full mt-1 p-1 text-black"
-                value={localData}
+                value={localData as string}
                 onChange={(e) => setLocalData(e.target.value)}
                 onBlur={handleDataUpdate}
                 onKeyDown={(e) => e.key === "Enter" && handleDataUpdate()}
@@ -141,7 +164,7 @@ export default function SingleTag({ item }: { item: Props }) {
         {tags.children && tags.children.length > 0 && (
           <div className="mt-2 pl-4 border-l-2 border-gray-400">
             {tags.children.map((child, index) => (
-              <SingleTag key={index} item={child} />
+              <SingleTag key={index} item={child} updateTree={updateChild} />
             ))}
           </div>
         )}
